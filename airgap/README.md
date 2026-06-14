@@ -176,6 +176,37 @@ set "NODE_VER=20.18.1"
 
 Python is pinned to 3.12 (matches `.python-version`).
 
+## 9b. Single ZIP & GitHub Release
+
+`1-online-package.bat` also produces a single carry-able archive next to the folder bundle:
+
+```
+<repo>\dist\AeroOne-bundle.zip
+```
+
+Copy just this one `.zip` to the closed network, unzip it into any empty (no-spaces)
+folder, then run `2-airgap-install.bat` → `3-run.bat`. (The unzipped contents are identical
+to the folder bundle layout in section 3.)
+
+### Publishing as a GitHub Release (optional)
+
+On the online PC, after the ZIP is built, publish it as a release asset with `release.bat`
+(requires the GitHub CLI `gh`, authenticated for the repo):
+
+```bat
+cd <repo>\airgap
+release.bat                 REM tag defaults to: airgap-win-x64
+release.bat airgap-v1.9.0   REM or pin a tag
+```
+
+This creates the release (or replaces the asset if the tag already exists) and prints the
+download URL. On the closed-network side, anyone can then download `AeroOne-bundle.zip`
+from the release page and run the 2 → 3 steps.
+
+> Notes: the asset is **Windows x64 specific** and ~1–1.5 GB (GitHub's per-asset limit is
+> 2 GB). The bundle binaries (Python/uv/Node/SurrealDB/ffmpeg) are **not** committed to git —
+> they only ever live inside the release asset / local `dist\`.
+
 ---
 
 ## 10. Verification status

@@ -38,13 +38,13 @@ mkdir "%BROOT%\uv-cache"    2>nul
 mkdir "%BROOT%\tiktoken-cache" 2>nul
 
 REM ===========================================================================
-echo [1/7] Downloading uv (python package manager)...
+echo [1/8] Downloading uv (python package manager)...
 call :dl "https://github.com/astral-sh/uv/releases/latest/download/uv-x86_64-pc-windows-msvc.zip" "%TEMP%\uv.zip" || goto :fail
 call :unzip "%TEMP%\uv.zip" "%TOOLS%" || goto :fail
 if not exist "%TOOLS%\uv.exe" (echo [ERR] uv.exe missing after extract & goto :fail)
 
 REM ===========================================================================
-echo [2/7] Downloading portable Node.js v%NODE_VER%...
+echo [2/8] Downloading portable Node.js v%NODE_VER%...
 call :dl "https://nodejs.org/dist/v%NODE_VER%/node-v%NODE_VER%-win-x64.zip" "%TEMP%\node.zip" || goto :fail
 call :unzip "%TEMP%\node.zip" "%TEMP%\node-x" || goto :fail
 robocopy "%TEMP%\node-x\node-v%NODE_VER%-win-x64" "%TOOLS%\node" /E /NFL /NDL /NJH /NJS >nul
@@ -52,11 +52,11 @@ if not exist "%TOOLS%\node\node.exe" (echo [ERR] node.exe missing after extract 
 rmdir /s /q "%TEMP%\node-x" 2>nul
 
 REM ===========================================================================
-echo [3/7] Downloading SurrealDB v%SURREAL_VER%...
+echo [3/8] Downloading SurrealDB v%SURREAL_VER%...
 call :dl "https://download.surrealdb.com/v%SURREAL_VER%/surreal-v%SURREAL_VER%.windows-amd64.exe" "%TOOLS%\surreal.exe" || goto :fail
 
 REM ===========================================================================
-echo [4/7] Downloading ffmpeg (essentials)...
+echo [4/8] Downloading ffmpeg (essentials)...
 call :dl "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" "%TEMP%\ffmpeg.zip" || goto :fail
 call :unzip "%TEMP%\ffmpeg.zip" "%TEMP%\ff-x" || goto :fail
 for /d %%D in ("%TEMP%\ff-x\ffmpeg-*") do (
@@ -73,14 +73,14 @@ set "UV_PYTHON_INSTALL_DIR=%BROOT%\uv-python"
 set "UV_CACHE_DIR=%BROOT%\uv-cache"
 
 REM ===========================================================================
-echo [5/7] Copying source into app folder ...
+echo [5/8] Copying source into app folder ...
 robocopy "%REPO%" "%BROOT%\app" /E /NFL /NDL /NJH /NJS ^
     /XD ".git" "dist" ".venv" "node_modules" ".next" "__pycache__" ".mypy_cache" ".ruff_cache" ".pytest_cache" "airgap" ^
     /XF "*.pyc" >nul
 if errorlevel 8 (echo [ERR] source copy failed & goto :fail)
 
 REM ===========================================================================
-echo [6/7] Installing Python + seeding deps cache + frontend build...
+echo [6/8] Installing Python + seeding deps cache + frontend build...
 "%UV%" python install 3.12 || (echo [ERR] uv python install failed & goto :fail)
 pushd "%BROOT%\app"
 "%UV%" sync --frozen || (echo [ERR] uv sync failed & popd & goto :fail)
@@ -100,7 +100,7 @@ rmdir /s /q "%BROOT%\app\.venv" 2>nul
 popd
 
 REM ===========================================================================
-echo [7/7] Adding install/run scripts...
+echo [7/8] Adding install/run scripts...
 copy /y "%~dp02-airgap-install.bat" "%BROOT%\2-airgap-install.bat" >nul
 copy /y "%~dp03-run.bat"            "%BROOT%\3-run.bat"            >nul
 copy /y "%~dp0stop.bat"             "%BROOT%\stop.bat"             >nul
@@ -109,11 +109,18 @@ copy /y "%~dp0stop.bat"             "%BROOT%\stop.bat"             >nul
 >>"%BROOT%\BUNDLE-INFO.txt" echo built: %DATE% %TIME%
 >>"%BROOT%\BUNDLE-INFO.txt" echo surrealdb v%SURREAL_VER%  node v%NODE_VER%  python 3.12
 
+REM ===========================================================================
+echo [8/8] Creating distributable ZIP (carry this single file offline)...
+del "%REPO%\dist\AeroOne-bundle.zip" 2>nul
+tar -a -c -f "%REPO%\dist\AeroOne-bundle.zip" -C "%REPO%\dist" AeroOne-bundle && (echo   ZIP ready: %REPO%\dist\AeroOne-bundle.zip) || (echo   [WARN] ZIP step failed - the folder bundle at %BROOT% is still usable)
+
 echo.
 echo ============================================================================
-echo  DONE. Bundle ready at:
-echo    %BROOT%
-echo  Copy the WHOLE folder to the closed network (e.g. D:\Chanil_Park\Project\Programming\AeroOne),
+echo  DONE.
+echo    Folder bundle : %BROOT%
+echo    Single ZIP    : %REPO%\dist\AeroOne-bundle.zip
+echo.
+echo  Carry the ZIP to the closed network, unzip into any empty (no-spaces) folder,
 echo  then run 2-airgap-install.bat once, then 3-run.bat to start.
 echo ============================================================================
 endlocal & exit /b 0
