@@ -1,7 +1,7 @@
 import os
 
-# ROOT DATA FOLDER
-DATA_FOLDER = "./data"
+# ROOT DATA FOLDER - overridable via DATA_FOLDER env (air-gapped/native deployments)
+DATA_FOLDER = os.environ.get("DATA_FOLDER", "").strip() or "./data"
 
 # LANGGRAPH CHECKPOINT FILE
 sqlite_folder = f"{DATA_FOLDER}/sqlite-db"

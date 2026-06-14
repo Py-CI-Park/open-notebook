@@ -40,6 +40,16 @@ Choose your installation route based on your setup and use case.
 
 ---
 
+### 🔒 I'm on an air-gapped / closed network (no internet, no Docker)
+**→ [Air-Gapped Windows](../../airgap/README.md)** - Self-contained offline bundle, 3 batch files
+- ✅ No Docker, nothing pre-installed on the target machine
+- ✅ Ships its own Python, uv, Node.js, SurrealDB, ffmpeg
+- ✅ Fully offline install & run (on-prem AI via Ollama/LM Studio/OpenAI-compatible)
+- ⚠️ Online + closed machines must both be Windows x64
+- ⏱️ Build bundle once, then ~5 minutes to running
+
+---
+
 
 ## System Requirements
 
