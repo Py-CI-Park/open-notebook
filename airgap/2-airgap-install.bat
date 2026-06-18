@@ -12,6 +12,9 @@ setlocal EnableExtensions
 set "ROOT=%~dp0"
 if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 
+set "OLLAMA_HOST=127.0.0.1"
+if /I "%~1"=="--ollama-host" if not "%~2"=="" set "OLLAMA_HOST=%~2"
+
 set "UV=%ROOT%\tools\uv.exe"
 set "PATH=%ROOT%\tools\node;%PATH%"
 set "UV_PYTHON_INSTALL_DIR=%ROOT%\uv-python"
@@ -37,34 +40,14 @@ pushd "%ROOT%\app"
 if errorlevel 1 (echo [ERR] offline uv sync failed & popd & goto :fail)
 popd
 
-echo [3/3] Writing starter .env (if absent)...
-if not exist "%ROOT%\app\.env" (
-  > "%ROOT%\app\.env" echo # Open Notebook - air-gapped config
-  >>"%ROOT%\app\.env" echo OPEN_NOTEBOOK_ENCRYPTION_KEY=CHANGE-ME-to-a-secret-string-min-16
-  >>"%ROOT%\app\.env" echo.
-  >>"%ROOT%\app\.env" echo # Database ^(native Windows MUST use 127.0.0.1, not localhost^)
-  >>"%ROOT%\app\.env" echo SURREAL_URL=ws://127.0.0.1:8000/rpc
-  >>"%ROOT%\app\.env" echo SURREAL_USER=root
-  >>"%ROOT%\app\.env" echo SURREAL_PASSWORD=root
-  >>"%ROOT%\app\.env" echo SURREAL_NAMESPACE=open_notebook
-  >>"%ROOT%\app\.env" echo SURREAL_DATABASE=open_notebook
-  >>"%ROOT%\app\.env" echo.
-  >>"%ROOT%\app\.env" echo # API
-  >>"%ROOT%\app\.env" echo API_HOST=127.0.0.1
-  >>"%ROOT%\app\.env" echo API_PORT=5055
-  >>"%ROOT%\app\.env" echo API_RELOAD=false
-  >>"%ROOT%\app\.env" echo.
-  >>"%ROOT%\app\.env" echo # On-prem AI endpoint ^(example: Ollama on the LAN^)
-  >>"%ROOT%\app\.env" echo # OLLAMA_BASE_URL=http://10.0.0.10:11434
-  echo     - created app\.env  ^(EDIT the encryption key + AI endpoint!^)
-) else (
-  echo     - app\.env already exists, leaving it untouched
-)
+echo [3/3] Writing auto-configured .env (if absent)...
+powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%ROOT%\write_env.ps1" -AppDir "%ROOT%\app" -OllamaHost "%OLLAMA_HOST%"
+if errorlevel 1 (echo [ERR] .env generation failed & goto :fail)
 
 echo.
 echo ============================================================================
 echo  INSTALL COMPLETE.
-echo  1) Edit  %ROOT%\app\.env   ^(set encryption key + on-prem AI endpoint^)
+echo  .env auto-configured ^(encryption key + OLLAMA_BASE_URL + CORS_ORIGINS^). Models auto-register on 3-run.bat.
 echo  2) Run   3-run.bat         to start all services
 echo ============================================================================
 echo.

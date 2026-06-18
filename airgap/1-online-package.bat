@@ -104,6 +104,9 @@ echo [7/8] Adding install/run scripts...
 copy /y "%~dp02-airgap-install.bat" "%BROOT%\2-airgap-install.bat" >nul
 copy /y "%~dp03-run.bat"            "%BROOT%\3-run.bat"            >nul
 copy /y "%~dp0stop.bat"             "%BROOT%\stop.bat"             >nul
+copy /y "%~dp0write_env.ps1"        "%BROOT%\write_env.ps1"        >nul
+copy /y "%~dp0detect_lan_ip.ps1"    "%BROOT%\detect_lan_ip.ps1"    >nul
+copy /y "%~dp0provision_models.ps1" "%BROOT%\provision_models.ps1" >nul
 
 > "%BROOT%\BUNDLE-INFO.txt" echo Open Notebook offline bundle
 >>"%BROOT%\BUNDLE-INFO.txt" echo built: %DATE% %TIME%
